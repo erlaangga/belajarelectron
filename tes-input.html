@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tes Input</title>
+	<link rel="stylesheet" type="text/css" href="w3.css">
+	<link rel="stylesheet" type="text/css" href="my.css">
+</head>
+<body>
+	<div class="w3-container w3-panel">
+		<textarea type="text" name="pastean" class="w3-bar w3-input" readonly="1"></textarea>
+		<input type="text" id="copyan" class="w3-bar w3-input">
+		<button class="w3-button w3-round w3-blue" id="copy">Copy</button>
+		<button class="w3-button w3-round w3-red" id="paste">Paste</button>
+	</div>
+	<div class="w3-container">
+		<div class="w3-panel w3-yellow" id="screen-shot-path">
+			Path: 
+		</div>
+		<div class="w3-panel w3-card w3-hover-green w3-yellow w3-text-khaki w3-round" id="screen-shot">
+			Take Screenshot
+		</div>
+	</div>
+	<div class="w3-container">
+		<form>
+			<table class="w3-table w3-border w3-bordered">
+				<tr>
+					<td class="w3-border">
+						<input class="w3-input" type="text" name="text1" placeholder="Text1">
+					</td>
+					<td class="w3-border">
+						<input class="w3-input" type="text" name="text2" placeholder="Text2" autofocus>
+					</td>
+				</tr>
+				<tr>
+					<td class="w3-border"><input class="w3-input" type="text" name="text3" placeholder="Text3"></td>
+					<td class="w3-border"><input class="w3-input" type="text" name="text4" placeholder="Text4"></td>
+				</tr>
+				<tr>
+					<td class="w3-border"><input class="w3-input" type="text" name="text5" placeholder="Text5"></td>
+				</tr>
+				<tr>
+					<td class="w3-border"><input class="w3-input" type="text" name="text6" placeholder="Text6"></td>
+					<td class="w3-border"><input class="w3-input" type="text" name="text7" placeholder="Text7"></td>
+				</tr>
+				<tr>
+					<td class="w3-border"><input class="w3-input" type="text" name="text8" placeholder="Text8"></td>
+					<td class="w3-border"><input class="w3-input" type="text" name="text9" placeholder="Text9" autofocus></td>
+				</tr>
+				<tr>
+					<td class="w3-border"><input class="w3-input" type="text" name="text10" placeholder="Text10"></td>
+					<td class="w3-border"><input class="w3-input" type="text" name="text11" placeholder="Text11"></td>
+				</tr>
+				
+				<tr><td class="w3-border"><input class="w3-input" type="text" name="text12" placeholder="Text12"></td>
+					<td class="w3-border"><input class="w3-input" type="text" name="text13" placeholder="Text13"></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+
+	<script type="text/javascript">
+		document.getElementsByName('text1')[0].autofocus = true;
+
+		const electron = require('electron')
+		const desktopCapturer = electron.desktopCapturer;
+		const screen = electron.screen
+		const shell = electron.shell
+		const clipboard = electron.clipboard
+		const dialog = electron.remote.dialog
+
+		const fs = require('fs')
+		const os = require('os')
+		const path = require('path')
+
+		const screenshot = document.getElementById('screen-shot')
+
+		screenshot.onclick = (e)=>{
+			dialog.showSaveDialog(
+				{
+					filters:{name:'png', extensions:['png']}
+				},
+				(filePath)=>{
+					if (filePath === undefined){alert('Please set name for the file');return}
+					const thumbSize = determineScreenShot();
+					console.log(thumbSize);
+					let options = {'types':['screen'], 'thumbnailSize':thumbSize}
+					desktopCapturer.getSources(options, (err, src)=>{
+						if (err) {return console.log(err.message)}
+						console.log(src)
+						src.forEach((x)=>{
+							if (x.name == 'Entire screen' || x.name === 'Screen 1') {
+								const screenShotPath = path.join(os.tmpdir(), 'screenshot.png')
+								console.log(screenShotPath)
+								console.log(filePath)
+								document.getElementById('screen-shot-path').textContent = "Taking Screenshot......"
+								console.log(src)
+								fs.writeFile(filePath, x.thumbnail.toPNG(), (err)=>{
+								// fs.writeFile(screenShotPath, x.thumbnail.toPNG(), (err)=>{
+									if (err) {return console.log(err.message)}
+									shell.openExternal('file://'+filePath)
+									// shell.openExternal('file://'+screenShotPath)
+									document.getElementById('screen-shot-path').textContent = "Saved on: " + filePath
+									// document.getElementById('screen-shot-path').textContent = "Saved on: " +screenShotPath
+									// console.log(screenShotPath)
+								})
+							}
+						})
+					})
+			})
+		}
+
+		function determineScreenShot(){
+			const screenSize = screen.getPrimaryDisplay().bounds;
+			const maxDimension = Math.max(screenSize.width, screenSize.height)
+			return {
+				width:maxDimension * window.devicePixelRatio,
+				height:maxDimension * window.devicePixelRatio
+			}
+		}
+
+		document.getElementById('copy').onclick = (e)=>{
+			clipboard.writeText(document.getElementById('copyan').value)
+		}
+		
+		document.getElementById('paste').onclick = (e)=>{
+			document.getElementsByName('pastean')[0].value = clipboard.readText()
+		}
+
+		var inputs = document.getElementsByTagName("input")
+
+		for(index in inputs){
+			inputs[index].onclick = (e)=>{
+				console.log(inputs[index])
+			}
+		}	
+	</script>
+</body>
+</html>

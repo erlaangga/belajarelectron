@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Second Window</title>
+	<link rel="stylesheet" type="text/css" href="w3.css">
+	<link rel="stylesheet" type="text/css" href="my.css">
+</head>
+<body>
+	<div class="w3-container">
+		<h1 class="w3-text-white">Jendela kedua</h1>
+		<textarea class="w3-input" id="content" placeholder="Choose a file to read" ></textarea>
+		<button class="w3-btn w3-indigo w3-hover-green w3-card w3-bar" id="save-btn">Save to File</button>
+		<button class="w3-btn w3-blue w3-hover-red w3-card w3-bar" id="open-btn">Open a File</button>
+		<button class="w3-btn w3-blue w3-hover-red w3-card w3-bar" id="update-btn" disabled>Update File</button>
+	</div>
+	<div class="w3-container" id="button-place">
+		
+	</div>
+	
+	<a href="tes-input.html">Input</a>
+	<script type="text/javascript">
+		const electron = require('electron')
+		const remote = electron.remote
+		const main = remote.require('./main.js')
+		const fs = require('fs')
+		const dialog = electron.remote.dialog
+		var fileNames = null;
+
+		var button = document.createElement("button")
+		button.textContent = "Open Window"
+		button.className = "w3-button w3-white w3-card w3-bar"
+		document.getElementById("button-place").appendChild(button)
+		button.addEventListener('click', ()=>{
+			var CURWIN = remote.getCurrentWindow()
+			main.openWin('index')
+			CURWIN.close()
+		}, false)
+
+
+		document.getElementById('save-btn').onclick = (e)=>{
+			dialog.showSaveDialog((fileName)=>{
+				if (fileName === undefined){alert('Please set name for the file');return}
+				var content = document.getElementById('content').value
+				console.log("Ini adalah content: "+content)
+				fs.writeFile(fileName, content, (err)=>{
+					if (err) console.log(err);
+					alert("The file has been successfully saved")
+				})
+				fileNames = fileName;
+			});
+		}
+
+		document.getElementById('update-btn').onclick = (e)=>{
+			if (fileNames != null) {
+				var content = document.getElementById('content').value
+				fs.writeFile(fileNames[0], content, (err)=>{
+					if (err) {
+						alert('An error occured updating the file')
+						return
+					}
+
+					alert('The file has been successfully updated.')
+				})
+			}else{
+				alert('No file selected')
+			}
+		}
+
+		document.getElementById('open-btn').onclick = (e)=>{
+			dialog.showOpenDialog((fileNames)=>{
+				console.log(fileNames)
+				console.log(this.fileNames)
+				if(fileNames === undefined){
+					alert('No file selected')
+				}else{
+					this.fileNames = fileNames;
+					readFile(fileNames[0])
+				}
+				console.log(this.fileNames)
+			})
+		}
+
+		function readFile(filepath){
+			fs.readFile(filepath, 'utf-8', (err, data)=>{
+				if (err) {
+					alert(err)
+					return
+				}
+
+				var textArea = document.getElementById('content');
+
+				textArea.value = data
+			})
+		}
+		
+	</script>
+</body>
+</html>

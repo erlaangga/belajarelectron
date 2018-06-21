@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Add Shopping List Item</title>
+	<link rel="stylesheet" type="text/css" href="w3.css">
+</head>
+<body>
+	<form>
+		<div class="w3-container">
+			<label>Title</label>
+			<input type="text" class="w3-input w3-center" id="title" autofocus required placeholder="Title of Notes">
+			<label>Item</label>
+			<textarea class="w3-input w3-animate-input" id="item" required placeholder="Note's Detail" ></textarea>
+		</div>
+		<div class="w3-container"><button class="w3-btn w3-green w3-hover-teal w3-bar-item w3-center w3-card" type="submit" style="margin-top: 10px;">Add Item</button></div>
+	</form>
+
+	<script type="text/javascript">
+		const electron = require('electron');
+		const ipcRenderer = electron.ipcRenderer;
+		const form = document.querySelector('form');
+
+		function submitForm(e){
+			e.preventDefault();
+			console.log(e);
+			const item = document.querySelector('#item').value;
+			const title = document.querySelector('#title').value;
+			ipcRenderer.send('item:add', [item, title])
+		}
+
+		form.addEventListener('submit', submitForm);
+
+	</script>
+</body>
+</html>

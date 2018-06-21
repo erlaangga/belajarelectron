@@ -1,0 +1,5 @@
+body { -webkit-user-select:none; }
+.w3-animate-fading{
+	animation-duration:1s;
+	animation-iteration-count:0.1;
+	}
